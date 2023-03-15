@@ -116,8 +116,8 @@ function setPieces(board) {
     }
 }
 
-function addPieceToElement(x, y, piece, board) {
-    const element = board[x][y].element
+export function addPieceToElement(y, x, piece, board) {
+    const element = board[y][x].element
     const imageElement = document.createElement('img')
     imageElement.src = piece.image
     element.appendChild(imageElement)

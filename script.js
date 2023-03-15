@@ -1,4 +1,4 @@
-import { PIECES, createBoard } from "./set_up.js"
+import { addPieceToElement, PIECES, createBoard } from "./set_up.js"
 
 const board = createBoard()
 const boardElement = document.querySelector('.board')
@@ -68,6 +68,19 @@ function checkValidMove(tile) {
 }
 
 function movePiece(tile) {
-    selectedTile.element.style.border = ''
+    if (tile.piece.name !== PIECES.EMPTY) { // empty the piece you're moving to
+        tile.element.removeChild(tile.element.firstChild)
+    }
+    tile.piece = {...selectedTile.piece}    // replace the piece to desired tile
+    
+    addPieceToElement(tile.y, tile.x, tile.piece, board)
+
+    selectedTile.element.style.border = ''  // remove piece from previous tile
+    selectedTile.element.removeChild(selectedTile.element.firstChild)
+    selectedTile.piece = {
+        name: PIECES.EMPTY,
+        image: '',
+        white: true
+    }
     selectedTile = null
 }
