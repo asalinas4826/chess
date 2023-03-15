@@ -1,4 +1,5 @@
 import { addPieceToElement, PIECES, createBoard } from "./set_up.js"
+import { validMoves } from "./chess.js"
 
 const board = createBoard()
 const boardElement = document.querySelector('.board')
@@ -7,6 +8,7 @@ const WHITE = true
 const BLACK = false
 let turn = WHITE
 let selectedTile    // last selected tile
+let moves = []
 
 board.forEach(row => {
     row.forEach(tile => {
@@ -17,17 +19,18 @@ board.forEach(row => {
             tile.element.style.cursor = 'default'
         }
         tile.element.addEventListener('click', () => {
-            console.log("white's turn? ", turn)
+            // console.log("white's turn? ", turn)
             if (turn === tile.piece.white && tile.piece.name !== PIECES.EMPTY) { // click own piece, call selectPiece()
-                console.log('selected piece')
+                // console.log('selected piece: ', tile.x, tile.y)
                 selectPiece(tile)
+                moves = validMoves(tile, selectedTile, board)
             }
             else if (selectedTile !== null && selectedTile !== undefined) { // anywhere else, attempt to move
-                console.log('tried to move')
-                if (checkValidMove(tile)) {
+                // console.log('tried to move to: ', tile.x, tile.y)
+                if (moves.some(move => { return move.x === tile.x && move.y === tile.y })) { // if tile is in the set of valid moves
                     movePiece(tile)
+                    changeTurns()
                 }
-                changeTurns()
             }
         })
         boardElement.append(tile.element)
@@ -61,10 +64,6 @@ function selectPiece(tile) {
     }
     selectedTile = tile
     tile.element.style.border = '5px solid black'
-}
-
-function checkValidMove(tile) {
-    return true
 }
 
 function movePiece(tile) {
