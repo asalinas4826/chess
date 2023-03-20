@@ -27,7 +27,9 @@ export function createBoard() {
                 piece: {
                     name: PIECES.EMPTY,
                     image: '',
-                    white: true
+                    white: true,
+                    hasMoved: false, // for King and Rook (castling) and for pawns (double move and en passant)
+                    enPassantable: false
                 }
             }
             row.push(tile)
