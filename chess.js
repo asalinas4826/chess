@@ -59,8 +59,11 @@ function pinned(piece) {
 }
 
 export function inCheck(x, y, board, color) { // tile is the King's tile
-    return (checkCheckHorizontal(board, x, y, 1, color) || checkCheckHorizontal(board, x, y, -1, color) ||
-            checkCheckVertical(board, x, y, 1, color) || checkCheckVertical(board, x, y, -1, color) || checkCheckKnight(board, x, y, color))
+    return (checkCheckEightWay(board, x, y, 1, 0, color) || checkCheckEightWay(board, x, y, -1, 0, color) ||
+        checkCheckEightWay(board, x, y, 0, 1, color) || checkCheckEightWay(board, x, y, 0, -1, color) ||
+        checkCheckEightWay(board, x, y, 1, 1, color) || checkCheckEightWay(board, x, y, 1, -1, color) ||
+        checkCheckEightWay(board, x, y, -1, 1, color) || checkCheckEightWay(board, x, y, -1, -1, color) ||
+        checkCheckKnight(board, x, y, color))
 }
 
 function checkCheckKnight(board, x, y, color) {
@@ -84,19 +87,26 @@ function checkCheckKnight(board, x, y, color) {
     })
 }
 
-function checkCheckHorizontal(board, a, b, x_move, color) {
+function checkCheckEightWay(board, a, b, x_move, y_move, color) {
     let x = a + x_move
-    let y = b
-    while (x >= 0 && x < 8) {
-        if(board[y][x].piece.name === PIECES.EMPTY || board[y][x].piece.white === color && board[y][x].piece.name === PIECES.KING) {
-            x += x_move // if the tile is empty, keep going
+    let y = b + y_move
+    while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+        if (board[y][x].piece.name === PIECES.EMPTY || board[y][x].piece.white === color && board[y][x].piece.name === PIECES.KING) {
+            x += x_move // if the tile is empty or your king, keep going
+            y += y_move
         }
         else if (board[y][x].piece.white === color) {
             return false // if the piece is white and not your own king, not in check in this direction
         }
         else if (board[y][x].piece.white !== color &&
+            (x_move === 0 && y_move !== 0 || x_move !== 0 && y_move === 0) &&
            (board[y][x].piece.name === PIECES.QUEEN || 
             board[y][x].piece.name === PIECES.ROOK)) {
+            return true // if it's not white and it's a queen or rook, you're in check
+        }
+        else if (board[y][x].piece.white !== color && x_move !== 0 && y_move !== 0 &&
+           (board[y][x].piece.name === PIECES.QUEEN || 
+            board[y][x].piece.name === PIECES.BISHOP)) {
             return true // if it's not white and it's a queen or rook, you're in check
         }
         else {
@@ -106,27 +116,6 @@ function checkCheckHorizontal(board, a, b, x_move, color) {
     return false
 }
 
-function checkCheckVertical(board, a, b, y_move, color) {
-    let x = a
-    let y = b + y_move
-    while (y >= 0 && y < 8) {
-        if(board[y][x].piece.name === PIECES.EMPTY || board[y][x].piece.white === color && board[y][x].piece.name === PIECES.KING) {
-            y += y_move // if the tile is empty, keep going
-        }
-        else if (board[y][x].piece.white === color) {
-            return false // if the piece is white and not your own king, not in check in this direction
-        }
-        else if (board[y][x].piece.white !== color &&
-           (board[y][x].piece.name === PIECES.QUEEN || 
-            board[y][x].piece.name === PIECES.ROOK)) {
-            return true // if it's not white and it's a queen or rook, you're in check
-        }
-        else {
-            return false
-        }
-    }
-    return false
-}
 
 function possiblePawnMoves(tile, board) {
     const candidates = []
