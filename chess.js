@@ -1,9 +1,10 @@
 // game logic, i.e. movement, checks, en passante, etc.
 import { PIECES } from "./set_up.js"
 
-export function validMoves(tile, selectedTile, board) { // return a list of valid position objects, which correspond to possible moves for a given piece
+export function validMoves(tile, board) { // return a list of valid position objects, which correspond to possible moves for a given piece
     let valid = []
-    const piece = selectedTile.piece
+    const piece = tile.piece
+
     if (pinned(piece)) { // change eventually: pinned pieces CAN move sometimes, just can't move out of the pin
         return []
     }
@@ -39,11 +40,72 @@ export function validMoves(tile, selectedTile, board) { // return a list of vali
     return valid
 }
 
+export function findKing(board, color) {
+    const pos = { x: -1, y: -1 }
+    board.some(row => {
+        row.some(tile => {
+            if (tile.piece.name === PIECES.KING && tile.piece.white === color) {
+                pos.x = tile.x
+                pos.y = tile.y
+                return
+            }
+        })
+    })
+    return pos
+}
+
 function pinned(piece) {
     return false
 }
 
-function inCheck(x, y, board) { // tile is the King's tile
+export function inCheck(x, y, board, color) { // tile is the King's tile
+    return (checkCheckHorizontal(board, x, y, 1, color) || checkCheckHorizontal(board, x, y, -1, color) ||
+            checkCheckVertical(board, x, y, 1, color) || checkCheckVertical(board, x, y, -1, color))
+}
+
+function checkCheckHorizontal(board, a, b, x_move, color) {
+    let x = a + x_move
+    let y = b
+    while (x >= 0 && x < 8) {
+        if(board[y][x].piece.name === PIECES.EMPTY || board[y][x].piece.white === color && board[y][x].piece.name === PIECES.KING) {
+            x += x_move // if the tile is empty, keep going
+        }
+        else if (board[y][x].piece.white === color) {
+            return false // if the piece is white and not your own king, not in check in this direction
+        }
+        else if (board[y][x].piece.white !== color &&
+           (board[y][x].piece.name === PIECES.QUEEN || 
+            board[y][x].piece.name === PIECES.ROOK)) {
+                console.log(board[y][x])
+            return true // if it's not white and it's a queen or rook, you're in check
+        }
+        else {
+            return false
+        }
+    }
+    return false
+}
+
+function checkCheckVertical(board, a, b, y_move, color) {
+    let x = a
+    let y = b + y_move
+    while (y >= 0 && y < 8) {
+        if(board[y][x].piece.name === PIECES.EMPTY || board[y][x].piece.white === color && board[y][x].piece.name === PIECES.KING) {
+            y += y_move // if the tile is empty, keep going
+        }
+        else if (board[y][x].piece.white === color) {
+            return false // if the piece is white and not your own king, not in check in this direction
+        }
+        else if (board[y][x].piece.white !== color &&
+           (board[y][x].piece.name === PIECES.QUEEN || 
+            board[y][x].piece.name === PIECES.ROOK)) {
+                console.log(board[y][x])
+            return true // if it's not white and it's a queen or rook, you're in check
+        }
+        else {
+            return false
+        }
+    }
     return false
 }
 
@@ -163,13 +225,13 @@ function possibleKingMoves(tile, board) {
     ]
     candidates.forEach(position => { // check normal moves
         if (position.x >= 0 && position.x <= 7 && position.y >= 0 && position.y <= 7
-            && !inCheck(position.x, position.y, board)) {
+            && !inCheck(position.x, position.y, board, tile.piece.white)) {
             valid.push(position)
         }
     })
     if (!tile.piece.hasMoved) { // check castling
         checkCastle(tile, board).forEach(move => {
-            if (!inCheck(move.x, move.y, board)) {
+            if (!inCheck(move.x, move.y, board, tile.piece.white)) {
                 valid.push(move)
             }
         })

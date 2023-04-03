@@ -1,5 +1,5 @@
 import { addPieceToElement, PIECES, createBoard } from "./set_up.js"
-import { validMoves } from "./chess.js"
+import { validMoves, inCheck, findKing } from "./chess.js"
 
 const board = createBoard()
 const boardElement = document.querySelector('.board')
@@ -19,11 +19,12 @@ board.forEach(row => {
             tile.element.style.cursor = 'default'
         }
         tile.element.addEventListener('click', () => {
+            
             // console.log("white's turn? ", turn)
             if (turn === tile.piece.white && tile.piece.name !== PIECES.EMPTY) { // click own piece, call selectPiece()
                 // console.log('selected piece: ', tile.x, tile.y)
                 selectPiece(tile)
-                moves = validMoves(tile, selectedTile, board)
+                moves = validMoves(tile, board)
             }
             else if (selectedTile !== null && selectedTile !== undefined) { // anywhere else, attempt to move
                 // console.log('tried to move to: ', tile.x, tile.y)
@@ -39,11 +40,20 @@ board.forEach(row => {
 
 function changeTurns() {
     turn = !turn
-    if (turn) {
-        turnTextElement.innerText = "White's move."
+
+    const pos = findKing(board, turn)
+    if (inCheck(pos.x, pos.y, board, turn)) {
+        turnTextElement.innerText = "Check!"
     }
     else {
-        turnTextElement.innerText = "Black's move."
+        turnTextElement.innerText = ""
+    }
+
+    if (turn) {
+        turnTextElement.innerText += " White's move."
+    }
+    else {
+        turnTextElement.innerText += " Black's move."
     }
     board.forEach(row => {
         row.forEach(tile => {
@@ -80,7 +90,7 @@ function movePiece(toTile, fromTile) {
             movePiece(board[fromTile.y][fromTile.x - 1], board[fromTile.y][0])
         }
     }
-    if (fromTile.piece.name === PIECES.PAWN) { // pawn stuff: en passant, double movement
+    else if (fromTile.piece.name === PIECES.PAWN) { // pawn stuff: en passant, double movement
         if (toTile.x !== fromTile.x && toTile.piece.name === PIECES.EMPTY) { // for en passant
             const capturedPiece = board[fromTile.y][toTile.x]
             capturedPiece.element.removeChild(capturedPiece.element.firstChild)
