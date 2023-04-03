@@ -63,11 +63,32 @@ export function inCheck(x, y, board, color) { // tile is the King's tile
         checkCheckEightWay(board, x, y, 0, 1, color) || checkCheckEightWay(board, x, y, 0, -1, color) ||
         checkCheckEightWay(board, x, y, 1, 1, color) || checkCheckEightWay(board, x, y, 1, -1, color) ||
         checkCheckEightWay(board, x, y, -1, 1, color) || checkCheckEightWay(board, x, y, -1, -1, color) ||
-        checkCheckKnight(board, x, y, color))
+        checkCheckKnight(board, x, y, color) || checkCheckKingPawn(board, x, y, color))
+}
+
+function checkCheckKingPawn(board, x, y, color) {
+    const candidates = [
+        { x: x + 1, y: y + 1 },
+        { x: x + 1, y: y - 1 },
+        { x: x + 1, y: y + 0 },
+        { x: x + 0, y: y + 1 },
+        { x: x + 0, y: y - 1 },
+        { x: x - 1, y: y + 1 },
+        { x: x - 1, y: y + 0 },
+        { x: x - 1, y: y - 1 } 
+    ]
+
+    return candidates.some(pos => {
+        if (pos.x >= 0 && pos.x < 8 && pos.y >= 0 && pos.y < 8 && 
+            (pos.x - x !== 0 && pos.y - y === -1 * color && board[pos.y][pos.x].piece.name === PIECES.PAWN || 
+            board[pos.y][pos.x].piece.name === PIECES.KING) && board[pos.y][pos.x].piece.white !== color) {
+                console.log(board[pos.y][pos.x])
+            return true
+        }
+    })
 }
 
 function checkCheckKnight(board, x, y, color) {
-    
     const candidates = [
         { x: x + 2, y: y + 1 },
         { x: x + 1, y: y + 2 },
