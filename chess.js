@@ -60,7 +60,28 @@ function pinned(piece) {
 
 export function inCheck(x, y, board, color) { // tile is the King's tile
     return (checkCheckHorizontal(board, x, y, 1, color) || checkCheckHorizontal(board, x, y, -1, color) ||
-            checkCheckVertical(board, x, y, 1, color) || checkCheckVertical(board, x, y, -1, color))
+            checkCheckVertical(board, x, y, 1, color) || checkCheckVertical(board, x, y, -1, color) || checkCheckKnight(board, x, y, color))
+}
+
+function checkCheckKnight(board, x, y, color) {
+    
+    const candidates = [
+        { x: x + 2, y: y + 1 },
+        { x: x + 1, y: y + 2 },
+        { x: x - 2, y: y + 1 },
+        { x: x + 1, y: y - 2 },
+        { x: x - 2, y: y - 1 },
+        { x: x - 1, y: y - 2 },
+        { x: x + 2, y: y - 1 },
+        { x: x - 1, y: y + 2 }
+    ]
+
+    return candidates.some(pos => {
+        if (pos.x >= 0 && pos.x < 8 && pos.y >= 0 && pos.y < 8 && 
+                board[pos.y][pos.x].piece.white !== color && board[pos.y][pos.x].piece.name === PIECES.KNIGHT) {
+                    return true
+                }
+    })
 }
 
 function checkCheckHorizontal(board, a, b, x_move, color) {
@@ -76,7 +97,6 @@ function checkCheckHorizontal(board, a, b, x_move, color) {
         else if (board[y][x].piece.white !== color &&
            (board[y][x].piece.name === PIECES.QUEEN || 
             board[y][x].piece.name === PIECES.ROOK)) {
-                console.log(board[y][x])
             return true // if it's not white and it's a queen or rook, you're in check
         }
         else {
@@ -99,7 +119,6 @@ function checkCheckVertical(board, a, b, y_move, color) {
         else if (board[y][x].piece.white !== color &&
            (board[y][x].piece.name === PIECES.QUEEN || 
             board[y][x].piece.name === PIECES.ROOK)) {
-                console.log(board[y][x])
             return true // if it's not white and it's a queen or rook, you're in check
         }
         else {
