@@ -5,16 +5,10 @@ export function validMoves(tile, board) { // return a list of valid position obj
     let valid = []
     const piece = tile.piece
 
-    if (pinned(piece)) { // change eventually: pinned pieces CAN move sometimes, just can't move out of the pin
-        return []
-    }
-    else if (piece.name === PIECES.PAWN) {
+    if (piece.name === PIECES.PAWN) {
         valid = possiblePawnMoves(tile, board)
     }
     else if (piece.name === PIECES.KNIGHT) { // KNIGHT
-        if (pinned(piece)) {
-            return []
-        }
         valid = possibleKnightMoves(tile)
     }
     else if (piece.name === PIECES.ROOK) { // ROOK
@@ -52,10 +46,6 @@ export function findKing(board, color) {
         })
     })
     return pos
-}
-
-function pinned(piece) {
-    return false
 }
 
 export function inCheck(x, y, board, color) { // tile is the King's tile
@@ -206,10 +196,10 @@ function possibleKnightMoves(tile) {
 function possibleRookMoves(tile, board) {
     const candidates = []
 
-    checkHorizontal(board, tile, candidates, -1) // -1 for left, 1 for right
-    checkHorizontal(board, tile, candidates, 1)
-    checkVertical(board, tile, candidates, -1)
-    checkVertical(board, tile, candidates, 1)
+    checkMoveEightWay(board, tile, candidates, -1, 0) // -1 for left, 1 for right
+    checkMoveEightWay(board, tile, candidates, 1, 0)
+    checkMoveEightWay(board, tile, candidates, 0, -1)
+    checkMoveEightWay(board, tile, candidates, 0, 1)
     
     return candidates
 }
@@ -217,10 +207,10 @@ function possibleRookMoves(tile, board) {
 function possibleBishopMoves(tile, board) {
     const candidates = []
 
-    checkFourtyFive(board, tile, candidates, -1) // -1 for bottom-left, 1 for top-right
-    checkFourtyFive(board, tile, candidates, 1)
-    checkOneThirtyFive(board, tile, candidates, -1)
-    checkOneThirtyFive(board, tile, candidates, 1)
+    checkMoveEightWay(board, tile, candidates, -1, 1) // -1 for bottom-left, 1 for top-right
+    checkMoveEightWay(board, tile, candidates, 1, -1)
+    checkMoveEightWay(board, tile, candidates, -1, -1)
+    checkMoveEightWay(board, tile, candidates, 1, 1)
 
     return candidates
 }
@@ -228,14 +218,14 @@ function possibleBishopMoves(tile, board) {
 function possibleQueenMoves(tile, board) {
     const candidates = []
 
-    checkHorizontal(board, tile, candidates, -1) // -1 for left, 1 for right
-    checkHorizontal(board, tile, candidates, 1)
-    checkVertical(board, tile, candidates, -1)
-    checkVertical(board, tile, candidates, 1)
-    checkFourtyFive(board, tile, candidates, -1) // -1 for bottom-left, 1 for top-right
-    checkFourtyFive(board, tile, candidates, 1)
-    checkOneThirtyFive(board, tile, candidates, -1)
-    checkOneThirtyFive(board, tile, candidates, 1)
+    checkMoveEightWay(board, tile, candidates, -1, 0) // -1 for left, 1 for right
+    checkMoveEightWay(board, tile, candidates, 1, 0)
+    checkMoveEightWay(board, tile, candidates, 0, -1)
+    checkMoveEightWay(board, tile, candidates, 0, 1)
+    checkMoveEightWay(board, tile, candidates, 1, -1) // -1 for bottom-left, 1 for top-right
+    checkMoveEightWay(board, tile, candidates, 1, 1)
+    checkMoveEightWay(board, tile, candidates, -1, -1)
+    checkMoveEightWay(board, tile, candidates, -1, 1)
 
     return candidates
 }
@@ -281,56 +271,17 @@ function checkCastle(tile, board) {
     return castleMoves
 }
 
-function checkHorizontal(board, tile, candidates, x_move) {
+function checkMoveEightWay(board, tile, candidates, x_move, y_move) {
     let x = tile.x + x_move
-    let y = tile.y
+    let y = tile.y + y_move
     let onEnemy = false
-    while (x >= 0 && x < 8 && (board[y][x].piece.name === PIECES.EMPTY && board[y][x].piece.white !== tile.piece.white || !onEnemy)) {
+    while (x >= 0 && x < 8 && y >= 0 && y < 8 &&
+        (board[y][x].piece.name === PIECES.EMPTY && board[y][x].piece.white !== tile.piece.white || !onEnemy)) {
         if (board[y][x].piece.name !== PIECES.EMPTY) { // found a black piece
             onEnemy = true
         }
         candidates.push({ x: x, y: y })
         x += x_move
-    }
-}
-
-function checkVertical(board, tile, candidates, y_move) {
-    let x = tile.x
-    let y = tile.y + y_move
-    let onEnemy = false
-    while (y >= 0 && y < 8 && (board[y][x].piece.name === PIECES.EMPTY && board[y][x].piece.white !== tile.piece.white || !onEnemy)) {
-        if (board[y][x].piece.name !== PIECES.EMPTY) { // found a black piece
-            onEnemy = true
-        }
-        candidates.push({ x: x, y: y })
         y += y_move
-    }
-}
-
-function checkFourtyFive(board, tile, candidates, sign) {
-    let x = tile.x + sign
-    let y = tile.y + sign
-    let onEnemy = false
-    while (y >= 0 && y < 8 && x >= 0 && x < 8 && (board[y][x].piece.name === PIECES.EMPTY && board[y][x].piece.white !== tile.piece.white || !onEnemy)) {
-        if (board[y][x].piece.name !== PIECES.EMPTY) {
-            onEnemy = true
-        }
-        candidates.push({ x: x, y: y })
-        x += sign
-        y += sign
-    }
-}
-
-function checkOneThirtyFive(board, tile, candidates, sign) {
-    let x = tile.x + sign
-    let y = tile.y - sign
-    let onEnemy = false
-    while (y >= 0 && y < 8 && x >= 0 && x < 8 && (board[y][x].piece.name === PIECES.EMPTY && board[y][x].piece.white !== tile.piece.white || !onEnemy)) {
-        if (board[y][x].piece.name !== PIECES.EMPTY) {
-            onEnemy = true
-        }
-        candidates.push({ x: x, y: y })
-        x += sign
-        y -= sign
     }
 }
