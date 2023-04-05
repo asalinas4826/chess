@@ -1,5 +1,5 @@
 # Chess
-Chess app made w/ vanilla JS, HTML, CSS (WIP)
+Chess app made w/ vanilla JS, HTML, CSS
 
 `script.js` contains all of the code associated with rendering the chess game onto the webpage. 
 `chess.js` contains game logic.
