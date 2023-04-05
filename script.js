@@ -38,8 +38,10 @@ board.forEach(row => {
     })
 })
 
-function endGame() {
-    alert("Checkmate! Click OK to play again.")
+async function endGame() {
+    if (confirm('Checkmate! Press OK to play again.')) {
+        window.location = "./" // refreshes
+    }
 }
 
 function changeTurns() {
