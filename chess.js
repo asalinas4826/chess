@@ -2,36 +2,66 @@
 import { PIECES } from "./set_up.js"
 
 export function validMoves(tile, board) { // return a list of valid position objects, which correspond to possible moves for a given piece
-    let valid = []
+    let possible_valid = []
     const piece = tile.piece
 
     if (piece.name === PIECES.PAWN) {
-        valid = possiblePawnMoves(tile, board)
+        possible_valid = possiblePawnMoves(tile, board)
     }
     else if (piece.name === PIECES.KNIGHT) { // KNIGHT
-        valid = possibleKnightMoves(tile)
+        possible_valid = possibleKnightMoves(tile)
     }
     else if (piece.name === PIECES.ROOK) { // ROOK
-        valid = possibleRookMoves(tile, board)
+        possible_valid = possibleRookMoves(tile, board)
     }
     else if (piece.name === PIECES.BISHOP) { // BISHOP
-        valid = possibleBishopMoves(tile, board)
+        possible_valid = possibleBishopMoves(tile, board)
     }
     else if (piece.name === PIECES.QUEEN) { // QUEEN
-        valid = possibleQueenMoves(tile, board)
+        possible_valid = possibleQueenMoves(tile, board)
     }
     else if (piece.name === PIECES.KING) { // KING
-        valid = possibleKingMoves(tile, board)
+        possible_valid = possibleKingMoves(tile, board)
     }
     else { // pieces that haven't been implemented yet
         board.forEach(row => {
             row.forEach(boardTile => {
-                valid.push({ x: boardTile.x, y: boardTile.y })
+                possible_valid.push({ x: boardTile.x, y: boardTile.y })
             })
         })
     }
-    console.log(valid)
-    return valid
+    return pruneValid(tile, possible_valid, board, tile.piece.white)
+}
+
+function pruneValid(tile, potential, board, color) {
+    // for every move in potential: 
+    //  temporarily remove piece
+    //  make the move
+    //  check inCheck()
+    //  if you're now in check, don't push to final moves list
+
+    const fromTemp = {...tile.piece}
+
+    tile.piece = {
+        name: PIECES.EMPTY,
+        image: '',
+        white: true,
+        hasMoved: false,
+        enPassantable: false
+    }
+    const final = []
+    potential.forEach(move => {
+        let toTemp = board[move.y][move.x].piece
+        board[move.y][move.x].piece = fromTemp
+        const kingPos = findKing(board, color)
+        if (!inCheck(kingPos.x, kingPos.y, board, color)) {
+            final.push(move)
+        }
+        board[move.y][move.x].piece = toTemp
+    })
+
+    tile.piece = fromTemp
+    return final
 }
 
 export function findKing(board, color) {
@@ -244,7 +274,7 @@ function possibleKingMoves(tile, board) {
     ]
     candidates.forEach(position => { // check normal moves
         if (position.x >= 0 && position.x <= 7 && position.y >= 0 && position.y <= 7
-            && !inCheck(position.x, position.y, board, tile.piece.white)) {
+            && !inCheck(position.x, position.y, board, tile.piece.white) && board[position.y][position.x].piece.name === PIECES.EMPTY) {
             valid.push(position)
         }
     })
@@ -261,11 +291,13 @@ function possibleKingMoves(tile, board) {
 function checkCastle(tile, board) {
     let castleMoves = []
     if (board[tile.y][tile.x + 1].piece.name === PIECES.EMPTY && board[tile.y][tile.x + 2].piece.name === PIECES.EMPTY && 
-        board[tile.y][tile.x + 3].piece.hasMoved === false) {
+        board[tile.y][tile.x + 3].piece.hasMoved === false && 
+        !inCheck(tile.x + 1, tile.y, board, tile.piece.white)) {
             castleMoves.push({ x: tile.x + 2, y: tile.y })
     }
     if (board[tile.y][tile.x - 1].piece.name === PIECES.EMPTY && board[tile.y][tile.x - 2].piece.name === PIECES.EMPTY &&
-        board[tile.y][tile.x - 3].piece.name === PIECES.EMPTY && board[tile.y][tile.x - 4].piece.hasMoved === false) {
+        board[tile.y][tile.x - 3].piece.name === PIECES.EMPTY && board[tile.y][tile.x - 4].piece.hasMoved === false &&
+        !inCheck(tile.x - 1, tile.y, board, tile.piece.white)) {
                 castleMoves.push({ x: tile.x - 2, y: tile.y })
     }
     return castleMoves
@@ -276,7 +308,7 @@ function checkMoveEightWay(board, tile, candidates, x_move, y_move) {
     let y = tile.y + y_move
     let onEnemy = false
     while (x >= 0 && x < 8 && y >= 0 && y < 8 &&
-        (board[y][x].piece.name === PIECES.EMPTY && board[y][x].piece.white !== tile.piece.white || !onEnemy)) {
+        (board[y][x].piece.name === PIECES.EMPTY || board[y][x].piece.white !== tile.piece.white && !onEnemy)) {
         if (board[y][x].piece.name !== PIECES.EMPTY) { // found a black piece
             onEnemy = true
         }

@@ -49,16 +49,16 @@ function setPieces(board) {
                 piece.white = false
             }
             
-            // if (row === 1 || row === 6) {   // pawns
-            //     piece.name = PIECES.PAWN
-            //     if (piece.white) {
-            //         piece.image = 'images/pawnW2.png'
-            //     }
-            //     else {
-            //         piece.image = 'images/pawnB2.png'
-            //     }                
-            // }
-            if (row === 0 || row === 7) {
+            if (row === 1 || row === 6) {   // pawns
+                piece.name = PIECES.PAWN
+                if (piece.white) {
+                    piece.image = 'images/pawnW2.png'
+                }
+                else {
+                    piece.image = 'images/pawnB2.png'
+                }                
+            }
+            else if (row === 0 || row === 7) {
                 switch (col) {
                     case 0: // rooks
                     case 7:

@@ -38,12 +38,32 @@ board.forEach(row => {
     })
 })
 
+function endGame() {
+    alert("Checkmate! Click OK to play again.")
+}
+
 function changeTurns() {
     turn = !turn
+    let gameOver = true
 
     const pos = findKing(board, turn)
     if (inCheck(pos.x, pos.y, board, turn)) {
-        turnTextElement.innerText = "Check!"
+        board.forEach(row => {
+            row.forEach(tile => {
+                if (tile.piece.white === turn && tile.piece.name !== PIECES.EMPTY && validMoves(tile, board).length !== 0) {
+                    console.log(tile)
+                    console.log(validMoves(tile, board))
+                    gameOver = false
+                }
+            })
+        })
+        if (gameOver) {
+            endGame()
+            return
+        }
+        else {
+            turnTextElement.innerText = "Check!"
+        }
     }
     else {
         turnTextElement.innerText = ""
