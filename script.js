@@ -127,6 +127,22 @@ function movePiece(toTile, fromTile) {
         if (Math.abs(toTile.y - fromTile.y) === 2) { // when it's moved twice, it can be en passanted
             fromTile.piece.enPassantable = true
         }
+        if (fromTile.piece.white && toTile.y === 0 || !fromTile.piece.white && toTile.y === 7) {
+            const color = fromTile.piece.white
+            fromTile.piece = {
+                name: PIECES.QUEEN,
+                image: '',
+                white: color,
+                hasMoved: false, // for King and Rook (castling) and for pawns (double move and en passant)
+                enPassantable: false
+            }
+            if (color) {
+                fromTile.piece.image = 'images/queenW2.png'
+            }
+            else {
+                fromTile.piece.image = 'images/queenW2.png'
+            }
+        }
     }
 
     if (toTile.piece.name !== PIECES.EMPTY) { // empty the piece you're moving to
