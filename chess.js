@@ -283,7 +283,8 @@ function possibleKingMoves(tile, board) {
     ]
     candidates.forEach(position => { // check normal moves
         if (position.x >= 0 && position.x <= 7 && position.y >= 0 && position.y <= 7
-            && !inCheck(position.x, position.y, board, tile.piece.white) && board[position.y][position.x].piece.name === PIECES.EMPTY) {
+            && !inCheck(position.x, position.y, board, tile.piece.white) && 
+            (board[position.y][position.x].piece.white !== tile.piece.white)) {
             valid.push(position)
         }
     })
