@@ -1,5 +1,5 @@
 import { addPieceToElement, PIECES, createBoard } from "./set_up.js"
-import { validMoves, inCheck, findKing } from "./chess.js"
+import { validMoves, inCheck, findKing, legalMoves } from "./chess.js"
 
 const board = createBoard()
 const boardElement = document.querySelector('.board')
@@ -38,34 +38,33 @@ board.forEach(row => {
     })
 })
 
-async function endGame() {
-    if (confirm('Checkmate! Press OK to play again.')) {
+async function endGame(winner) {
+    if (winner && confirm('Checkmate! Press OK to play again.')) {
         window.location = "./" // refreshes
+    }
+    else if (confirm('Stalemate! Press OK to play again.')) {
+        window.location = "./"
     }
 }
 
 function changeTurns() {
     turn = !turn
-    let gameOver = true
+    let gameOver = false
 
     const pos = findKing(board, turn)
     if (inCheck(pos.x, pos.y, board, turn)) {
-        board.forEach(row => {
-            row.forEach(tile => {
-                if (tile.piece.white === turn && tile.piece.name !== PIECES.EMPTY && validMoves(tile, board).length !== 0) {
-                    console.log(tile)
-                    console.log(validMoves(tile, board))
-                    gameOver = false
-                }
-            })
-        })
+        gameOver = legalMoves(board)
         if (gameOver) {
-            endGame()
+            endGame(true)
             return
         }
         else {
             turnTextElement.innerText = "Check!"
         }
+    }
+    else if (legalMoves(board)) { // stalemate
+        endGame(true)
+        return
     }
     else {
         turnTextElement.innerText = ""

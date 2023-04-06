@@ -1,6 +1,19 @@
 // game logic, i.e. movement, checks, en passante, etc.
 import { PIECES } from "./set_up.js"
 
+export function legalMoves(board) {
+    board.forEach(row => {
+        row.forEach(tile => {
+            if (tile.piece.white === turn && tile.piece.name !== PIECES.EMPTY && validMoves(tile, board).length !== 0) {
+                console.log(tile)
+                console.log(validMoves(tile, board))
+                return false
+            }
+        })
+    })
+    return true
+}
+
 export function validMoves(tile, board) { // return a list of valid position objects, which correspond to possible moves for a given piece
     let possible_valid = []
     const piece = tile.piece
