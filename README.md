@@ -5,3 +5,4 @@ Chess app made w/ vanilla JS, HTML, CSS
 `chess.js` contains game logic.
 `setup.js` simply sets up the board at the beginning of every game.
 
+Pawns only promote to queen. Might add other pieces later, idk.
