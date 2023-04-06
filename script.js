@@ -49,11 +49,10 @@ async function endGame(winner) {
 
 function changeTurns() {
     turn = !turn
-    let gameOver = false
+    let gameOver = !legalMoves(turn, board)
 
     const pos = findKing(board, turn)
     if (inCheck(pos.x, pos.y, board, turn)) {
-        gameOver = legalMoves(board)
         if (gameOver) {
             endGame(true)
             return
@@ -62,8 +61,8 @@ function changeTurns() {
             turnTextElement.innerText = "Check!"
         }
     }
-    else if (legalMoves(board)) { // stalemate
-        endGame(true)
+    else if (gameOver) { // stalemate
+        endGame(false)
         return
     }
     else {

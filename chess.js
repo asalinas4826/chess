@@ -1,17 +1,12 @@
 // game logic, i.e. movement, checks, en passante, etc.
 import { PIECES } from "./set_up.js"
 
-export function legalMoves(board) {
-    board.forEach(row => {
-        row.forEach(tile => {
-            if (tile.piece.white === turn && tile.piece.name !== PIECES.EMPTY && validMoves(tile, board).length !== 0) {
-                console.log(tile)
-                console.log(validMoves(tile, board))
-                return false
-            }
+export function legalMoves(turn, board) {
+    return board.some(row => {
+        return row.some(tile => {
+            return (tile.piece.white === turn && tile.piece.name !== PIECES.EMPTY && validMoves(tile, board).length !== 0)
         })
     })
-    return true
 }
 
 export function validMoves(tile, board) { // return a list of valid position objects, which correspond to possible moves for a given piece
@@ -43,6 +38,7 @@ export function validMoves(tile, board) { // return a list of valid position obj
             })
         })
     }
+    console.log(pruneValid(tile, possible_valid, board, tile.piece.white))
     return pruneValid(tile, possible_valid, board, tile.piece.white)
 }
 
@@ -113,7 +109,7 @@ function checkCheckKingPawn(board, x, y, color) {
 
     return candidates.some(pos => {
         if (pos.x >= 0 && pos.x < 8 && pos.y >= 0 && pos.y < 8 && 
-            (pos.x - x !== 0 && pos.y - y === -1 * color && board[pos.y][pos.x].piece.name === PIECES.PAWN || 
+            (pos.x - x !== 0 && pos.y - y === 1 + -2 * color && board[pos.y][pos.x].piece.name === PIECES.PAWN || 
             board[pos.y][pos.x].piece.name === PIECES.KING) && board[pos.y][pos.x].piece.white !== color) {
                 console.log(board[pos.y][pos.x])
             return true
