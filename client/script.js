@@ -11,34 +11,62 @@ const BLACK = false
 let turn = WHITE
 let selectedTile    // last selected tile
 let moves = []
+let roomId = 0
 
-board.forEach(row => {
-    row.forEach(tile => {
-        if (turn === tile.piece.white && tile.piece.name !== PIECES.EMPTY) {
-            tile.element.style.cursor = 'pointer'
-        }
-        else {
-            tile.element.style.cursor = 'default'
-        }
-        tile.element.addEventListener('click', () => {
-            
-            // console.log("white's turn? ", turn)
-            if (turn === tile.piece.white && tile.piece.name !== PIECES.EMPTY) { // click own piece, call selectPiece()
-                // console.log('selected piece: ', tile.x, tile.y)
-                selectPiece(tile)
-                moves = validMoves(tile, board)
-            }
-            else if (selectedTile !== null && selectedTile !== undefined) { // anywhere else, attempt to move
-                // console.log('tried to move to: ', tile.x, tile.y)
-                if (moves.some(move => { return move.x === tile.x && move.y === tile.y })) { // if tile is in the set of valid moves
-                    movePiece(tile, selectedTile)
-                    changeTurns()
-                }
-            }
-        })
-        boardElement.append(tile.element)
-    })
+socket.on('game start', (color, room) => { // 0 is black and 1 is white
+    roomId = room
+    gameStart(Boolean(color))
 })
+
+socket.on('opponent move', (to, from, opp_color) => {
+    if (opp_color === turn) {
+        movePiece(board[to.y][to.x], board[from.y][from.x])
+        changeTurns()
+    }
+})
+
+function gameStart(color) {
+    turnTextElement.innerHTML = 'White\'s move.'
+    board.forEach(row => {
+        row.forEach(tile => {
+            if (turn === color && color === tile.piece.white && tile.piece.name !== PIECES.EMPTY) {
+                tile.element.style.cursor = 'pointer'
+            }
+            else {
+                tile.element.style.cursor = 'default'
+            }
+
+            tile.element.addEventListener('click', () => {
+                console.log('color: ' + color + ', turn: ' + turn)
+                if (turn === color) {
+                    console.log('processing turn')
+                    processOwnTurn(tile, color)
+                }
+            })
+
+            boardElement.append(tile.element)
+        })
+    })
+}
+
+function processOwnTurn(tile, color) {
+    // console.log("white's turn? ", turn)
+    if (color === tile.piece.white && tile.piece.name !== PIECES.EMPTY) { // click own piece, call selectPiece()
+        console.log('selected piece: ', tile.x, tile.y)
+        selectPiece(tile)
+        moves = validMoves(tile, board)
+
+        console.log(moves)
+    }
+    else if (selectedTile !== null && selectedTile !== undefined) { // anywhere else, attempt to move
+        console.log('tried to move to: ', tile.x, tile.y)
+        if (moves.some(move => { return move.x === tile.x && move.y === tile.y })) { // if tile is in the set of valid moves
+            socket.emit('player move', roomId, {...tile}, {...selectedTile}, color)
+            movePiece(tile, selectedTile)
+            changeTurns()
+        }
+    }
+}
 
 async function endGame(winner) {
     if (winner && confirm('Checkmate! Press OK to play again.')) {

@@ -38,7 +38,7 @@ export function validMoves(tile, board) { // return a list of valid position obj
             })
         })
     }
-    console.log(pruneValid(tile, possible_valid, board, tile.piece.white))
+    // console.log(pruneValid(tile, possible_valid, board, tile.piece.white))
     return pruneValid(tile, possible_valid, board, tile.piece.white)
 }
 
